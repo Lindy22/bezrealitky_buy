@@ -167,12 +167,14 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
             desc = desc_xpath[0].replace(u'\xb2',"2").replace(u'\u200b',"2").encode('cp1250','ignore').lstrip()
             price_int = price_reg.findall(price)
             price_int = [int(l.replace(".","")) for l in price_int]
+            surface_int = int(surface_all.replace("m2",""))
+            price_per_meter = price_int / surface_int
             if sum(price_int) > price_threshold: #omezeni na vyssi celkoveho najmu
                 continue        
             if id_advert+"-"+str(price) in old_advert_list:
                 continue
             else:
-                advert_list = title + ';' + web_adress + ';' + surface_all + ';' + str(price) + ';' + desc + ';' + id_advert
+                advert_list = title + ';' + web_adress + ';' + surface_all + ';' + str(price) + ';' +str(price_per_meter) + ';' + desc + ';' + id_advert
                 advert_dict[count] = advert_list
                 id_advert_dict[count] = id_advert
                 count += 1
