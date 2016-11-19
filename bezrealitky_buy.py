@@ -30,7 +30,7 @@ httpcon = urllib3.PoolManager()
 price_reg = re.compile('([0-9]{1,2}.[0-9]{3}.[0-9]{3})+')
 pagination_reg = re.compile('([0-9]{1,3})+')
 surface_room_reg = re.compile('([[0-9]{1}\+[0-9]{1}|[[0-9]{1}\+kk)+')
-surface_flat_reg = re.compile('([0-9]{1,3})+')
+surface_flat_reg = re.compile('([0-9]{2,3})+')
 pager_bezrealitky="&page={}"
 pager_sreality="&strana={}"
 price = 4000000
@@ -69,6 +69,7 @@ locations = ["vinohrady",
 TEMPLATE_FILE = """Lokalita: {title}
 Velikost: {surface}
 Cena: {price}
+Cena za metr: {price_per_meter}
 Popis: {desc}
 Odkaz na web: {web_adress}"""
 
@@ -77,6 +78,7 @@ TEMPLATE_EMAIL = """Subject: {title}
 Lokalita: {title}
 Velikost: {surface}
 Cena: {price}
+Cena za metr: {price_per_meter}
 Popis: {desc}
 Odkaz na web: {web_adress}"""
 
@@ -105,8 +107,9 @@ def create_file(path,advert_dict):
                                   web_adress = advert_output[1],
                                   surface = advert_output[2],
                                   price = advert_output[3],
-                                  desc = advert_output[4],
-                                  id_advert = advert_output[5])
+                                  price_per_meter = advert_output[4],
+                                  desc = advert_output[5],
+                                  id_advert = advert_output[6])
             fi.write(out)
 
 def get_adverts_from_file(path):
@@ -126,8 +129,9 @@ def send_email(username,password,fromaddr,toaddr,path,advert_dict):
                               web_adress = advert_output[1],
                               surface = advert_output[2],
                               price = advert_output[3],
-                              desc = advert_output[4],
-                              id_advert = advert_output[5])
+                              price_per_meter = advert_output[4],
+                              desc = advert_output[5],
+                              id_advert = advert_output[6])
         server.sendmail(fromaddr, toaddr, msg)
     server.quit()
 
@@ -149,8 +153,8 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
         page_cnt = 1
         
     for page in range(page_cnt):
-        flat_list=p.xpath(u'body//div[@class="record highlight ng-hide"]')
-        flat_list2=p.xpath(u'body//div[@class="record  ng-hide"]')
+        flat_list=p.xpath(u'body//div[@class="record highlight"]')
+        flat_list2=p.xpath(u'body//div[@class="record "]')
         flat_list = flat_list + flat_list2
         for r in flat_list:
             title_xpath = r.xpath('div[@class="details"]/h2/a/text()')
@@ -167,14 +171,17 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
             desc = desc_xpath[0].replace(u'\xb2',"2").replace(u'\u200b',"2").encode('cp1250','ignore').lstrip()
             price_int = price_reg.findall(price)
             price_int = [int(l.replace(".","")) for l in price_int]
-            surface_int = int(surface_all.replace("m2",""))
-            price_per_meter = price_int / surface_int
+            surface_room = surface_room_reg.findall(surface_all)
+            surface_flat = surface_flat_reg.findall(surface_all)
+            surface_flat = [float(m) for m in surface_flat]            
+            price_per_meter =  "{:.0f}".format(sum(price_int) / sum(surface_flat))
+            
             if sum(price_int) > price_threshold: #omezeni na vyssi celkoveho najmu
                 continue        
             if id_advert+"-"+str(price) in old_advert_list:
                 continue
             else:
-                advert_list = title + ';' + web_adress + ';' + surface_all + ';' + str(price) + ';' +str(price_per_meter) + ';' + desc + ';' + id_advert
+                advert_list = title + ';' + web_adress + ';' + surface_all + ';' + str(price) + ';' + str(price_per_meter) + ';' + desc + ';' + id_advert
                 advert_dict[count] = advert_list
                 id_advert_dict[count] = id_advert
                 count += 1
