@@ -6,6 +6,7 @@ import psycopg2.extras
 import lxml.etree
 import time
 import datetime
+from datetime import date
 import threading
 #import psycopg2_bulk_insert
 #import psycopg2_etl_utils
@@ -27,7 +28,7 @@ pripona = "/vyhledat"
 pripona2 = "/vypis"
 path = "/home/pi/Documents/bezrealitky_proj/buy/"
 httpcon = urllib3.PoolManager()
-price_reg = re.compile('([0-9]{1,2}.[0-9]{3}.[0-9]{3})+')
+price_reg = re.compile('([0-9]{0,2}.?[0-9]{3}.?[0-9]{3})+')
 pagination_reg = re.compile('([0-9]{1,3})+')
 surface_room_reg = re.compile('([[0-9]{1}\+[0-9]{1}|[[0-9]{1}\+kk)+')
 surface_flat_reg = re.compile('([0-9]{2,3})+')
@@ -192,7 +193,11 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
     send_email(username,password,fromaddr,toaddr,path,advert_dict)
     create_file(path+quarter+"/",advert_dict)
 ##    print(id_advert_dict)
-
+    for j in advert_dict:
+        advert_output = advert_dict[j].split(';')
+        with open ("inzeraty_bezrealitky.csv","wb") as f:
+            f.write(str(date.today()) + ";" + advert_output[0] + ";" + advert_output[1] + ";" + advert_output[2] + ";" + advert_output[3] + ";" + advert_output[4] + ";" + advert_output[6]+'\n')
+        f.close()    
        
 def execute_script():
     time.sleep(random.uniform(300,640))
