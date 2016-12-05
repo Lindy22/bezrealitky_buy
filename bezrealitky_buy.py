@@ -194,8 +194,8 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
 ##    print(id_advert_dict)
     for j in advert_dict:
         advert_output = advert_dict[j].split(';')
-        with open ("inzeraty_bezrealitky.csv","wb") as f:
-            f.write(str(time.strftime('%Y-%m-%d')) + ";" + str(time.strftime('%H:%M:%S')) + ";" + advert_output[1] + ";" + advert_output[2] + ";" + advert_output[3] + ";" + advert_output[4] + ";" + advert_output[6]+'\n')
+        with open ("inzeraty_bezrealitky.csv","ab") as f:
+            f.write(str(time.strftime('%Y-%m-%d')) + ";" + str(time.strftime('%H:%M:%S')) + ";" + advert_output[1] + ";" + advert_output[2] + ";" + advert_output[3] + ";" + advert_output[4] +'\n')
         f.close()    
        
 def execute_script():
