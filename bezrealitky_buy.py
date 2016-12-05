@@ -195,7 +195,7 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
     for j in advert_dict:
         advert_output = advert_dict[j].split(';')
         with open ("inzeraty_bezrealitky.csv","ab") as f:
-            f.write(str(time.strftime('%Y-%m-%d')) + ";" + str(time.strftime('%H:%M:%S')) + ";" + advert_output[1] + ";" + advert_output[2] + ";" + advert_output[3] + ";" + advert_output[4] +'\n')
+            f.write(str(time.strftime('%Y-%m-%d %H:%M:%S')) + ";" + advert_output[1] + ";" + advert_output[2] + ";" + advert_output[3] + ";" + advert_output[4]+'\n')
         f.close()    
        
 def execute_script():
@@ -212,6 +212,10 @@ def i_am_alive(current_time,username,password, fromaddr,toaddr):
     
 while True:
     tstart=time.time()
+    if os.path.exists("C:/Users/lintom2/Documents/Stazene - bordel/buy/inzeraty_bezrealitky.csv") == False:
+        with open ("inzeraty_bezrealitky.csv","ab") as f:
+            f.write("DateTime;WebAdress;Surface;Price;PricePerMeter\n")
+        f.close()
     for i in locations:
         old_advert_list = get_adverts_from_file(path+i+"/")
         get_flats_bezrealitky(httpcon,http+hostname+pripona2+location_paths[i],old_advert_list,price,i)
