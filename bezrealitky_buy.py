@@ -20,12 +20,18 @@ import random
 import os
 import codecs
 import smtplib
+import mimetypes
+from email.mime.multipart import MIMEMultipart
+from email import encoders
+from email.message import Message
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
 
 http="https://"
 hostname="www.bezrealitky.cz"
 pripona = "/vyhledat"
 pripona2 = "/vypis"
-path = ".../bezrealitky_proj/buy/"
+path = "/home/pi/Documents/bezrealitky_proj/buy/"
 httpcon = urllib3.PoolManager()
 price_reg = re.compile('([0-9]{0,2}.?[0-9]{3}.?[0-9]{3})+')
 pagination_reg = re.compile('([0-9]{1,3})+')
@@ -34,14 +40,14 @@ surface_flat_reg = re.compile('([0-9]{2,3})+')
 pager_bezrealitky="&page={}"
 pager_sreality="&strana={}"
 price = 4000000
-hour = [6,8,11,14,17,20]
+hour = [7,19]
 minute = [51,52,53,54,55,56,57,58,59]
 
-fromaddr = 'bot@email.com'   #email you use to send the best offers - I will call it BOT email
-toaddr  = 'your@email.com'  # email where you would like to receive best offers
+fromaddr = 'lindybot22@gmail.com'
+toaddr  = 'tomaslindauer@gmail.com'
 
-username = "YourUsername"  # username to your BOT email
-password = "YourPassword"   #password tou your BOT email
+username = "lindybot22"
+password = "raspibot99"
 
 location_paths={
     "vinohrady":"?advertoffertype=nabidka-prodej&estatetype=byt&region=praha&county=praha-vinohrady&disposition%5B%5D=1-1&disposition%5B%5D=2-kk&disposition%5B%5D=2-1&disposition%5B%5D=3-kk&disposition%5B%5D=3-1&disposition%5B%5D=4-kk&disposition%5B%5D=4-1&disposition%5B%5D=5-kk&disposition%5B%5D=5-1&disposition%5B%5D=6-kk&disposition%5B%5D=6-1&disposition%5B%5D=7-kk&disposition%5B%5D=7-1&disposition%5B%5D=ostatni&priceFrom=&priceTo=&order=time_order_desc&submit=",
@@ -82,7 +88,8 @@ Cena za metr: {price_per_meter}
 Popis: {desc}
 Odkaz na web: {web_adress}"""
 
-TEMPLATE_IAMALIVE = """I am still hardworking!"""
+TEMPLATE_IAMALIVE = """I am still hardworking!
+Please, find the updated file in the attachment."""
 
 def get_url(httpcon, url):
     headers = {}
@@ -100,6 +107,7 @@ def get_url(httpcon, url):
     return res.data
 
 def create_file(path,advert_dict):
+##    path = "C:/Users/Tomas/Documents/Python/bezrealitky_proj/"
     for j in advert_dict:
         advert_output = advert_dict[j].split(';')
         with open(path+advert_output[-1]+"-"+advert_output[3]+".txt","w") as fi:
@@ -120,7 +128,8 @@ def get_adverts_from_file(path):
     return(name_list)
 
 def send_email(username,password,fromaddr,toaddr,path,advert_dict):
-    server = smtplib.SMTP('smtp.gmail.com:587') #if you use gmail
+    server = smtplib.SMTP('smtp.gmail.com:587')
+##    server = smtplib.SMTP('smtp.seznam.cz:25')
     server.starttls()
     server.login(username,password)
     for k in advert_dict:
@@ -139,8 +148,11 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
     
     htmlparser=lxml.etree.HTMLParser()
     page=get_url(httpcon,main_url)
+    ##    print page
         
     p=lxml.etree.fromstring(page,htmlparser)
+    ##    print ''.join(p.itertext()).encode('utf-8')
+    ##    flat_list=p.xpath(u'body//div[@class="list"]/div[@class="item ng-scope highlight"]')
     pagination_xpath = p.xpath(u'body//div[@class="box-body"]/a/text()')
     pagination_list = [str(pagination_reg.findall(m)).strip("[]''""") for m in pagination_xpath]
     pagination_list = filter(None,pagination_list)
@@ -156,6 +168,7 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
         flat_list=p.xpath(u'body//div[@class="record highlight"]')
         flat_list2=p.xpath(u'body//div[@class="record "]')
         flat_list = flat_list + flat_list2
+    ##    print flat_list
         for r in flat_list:
             title_xpath = r.xpath('div[@class="details"]/h2/a/text()')
             web_adress_xpath = r.xpath('div[@class="details"]/p[@class="short-url"]/text()')
@@ -189,30 +202,46 @@ def get_flats_bezrealitky(httpcon,main_url,old_advert_list,price_threshold,quart
         page=get_url(httpcon,url)
         p=lxml.etree.fromstring(page,htmlparser)
                     
-    send_email(username,password,fromaddr,toaddr,path,advert_dict)
+##    send_email(username,password,fromaddr,toaddr,path,advert_dict)
     create_file(path+quarter+"/",advert_dict)
 ##    print(id_advert_dict)
     for j in advert_dict:
         advert_output = advert_dict[j].split(';')
         with open ("inzeraty_bezrealitky.csv","ab") as f:
-            f.write(str(time.strftime('%Y-%m-%d %H:%M:%S')) + ";" + advert_output[1] + ";" + advert_output[2] + ";" + advert_output[3] + ";" + advert_output[4] + ";" + quarter +'\n')
+            f.write(str(time.strftime('%Y-%m-%d %H:%M:%S')) + ";" + advert_output[1] + ";" + advert_output[2] + ";" + advert_output[3] + ";" + advert_output[4]+ ";" + quarter +'\n')
         f.close()    
        
 def execute_script():
-    time.sleep(random.uniform(300,640))
+    time.sleep(random.uniform(3300,3600))
 
 def i_am_alive(current_time,username,password, fromaddr,toaddr):
-    if current_time.hour in hour and current_time.minute in minute:
+##    if current_time.hour in hour and current_time.minute in minute:
+    if current_time.hour in hour:    
         server = smtplib.SMTP('smtp.gmail.com:587') #if you use gmail
         server.starttls()
         server.login(username,password)
-        msg = "Buy - I am still hardworking!"
-        server.sendmail(fromaddr, toaddr, msg)
+        msg = MIMEMultipart()
+        msg['Subject'] = str("Check a new flats")
+        fileToSend = "inzeraty_bezrealitky.csv"
+        ctype,encoding = mimetypes.guess_type(fileToSend)
+        if ctype is None or encoding is not None:
+            ctype = "application/octet-stream"
+        maintype, subtype = ctype.split("/",1)
+        fp = open(fileToSend,"rb")
+        attachment = MIMEBase(maintype, subtype)
+        attachment.set_payload(fp.read())
+        fp.close()
+        encoders.encode_base64(attachment)
+        attachment.add_header("Content-Disposition","attachment", filename = fileToSend)
+        msg.attach(attachment)
+        body = MIMEText(TEMPLATE_IAMALIVE)
+        msg.attach(body)
+        server.sendmail(fromaddr, toaddr, msg.as_string())        
         server.quit()
     
 while True:
     tstart=time.time()
-    if os.path.exists(".../buy/inzeraty_bezrealitky.csv") == False:
+    if os.path.exists("/home/pi/Documents/bezrealitky_proj/verze/inzeraty_bezrealitky.csv") == False:
         with open ("inzeraty_bezrealitky.csv","ab") as f:
             f.write("DateTime;WebAdress;Surface;Price;PricePerMeter;Location\n")
         f.close()
