@@ -31,11 +31,11 @@ price = 4000000
 hour = [7, 19]
 minute = [51, 52, 53, 54, 55, 56, 57, 58, 59]
 
-fromaddr = 'lindybot22@gmail.com'
-toaddr = 'tomaslindauer@gmail.com'
+fromaddr = 'xxxx@xxx.xx'
+toaddr = 'xxxx@xxx.xx'
 
-username = "lindybot22"
-password = "raspibot99"
+username = "Xxxxx"
+password = "Xxxxx"
 
 location_paths = {
     "vinohrady":"?advertoffertype=nabidka-prodej&estatetype=byt&region=praha&county=praha-vinohrady&disposition%5B%5D=1-1&disposition%5B%5D=2-kk&disposition%5B%5D=2-1&disposition%5B%5D=3-kk&disposition%5B%5D=3-1&disposition%5B%5D=4-kk&disposition%5B%5D=4-1&disposition%5B%5D=5-kk&disposition%5B%5D=5-1&disposition%5B%5D=6-kk&disposition%5B%5D=6-1&disposition%5B%5D=7-kk&disposition%5B%5D=7-1&disposition%5B%5D=ostatni&priceFrom=&priceTo=&order=time_order_desc&submit=",
@@ -97,7 +97,6 @@ def get_url(httpcon, url):
 
 
 def create_file(path,advert_dict):
-    # path = "C:/Users/Tomas/Documents/Python/bezrealitky_proj/"
     for j in advert_dict:
         advert_output = advert_dict[j].split(';')
         with open(path+advert_output[-1]+"-"+advert_output[3]+".txt","w") as fi:
@@ -208,7 +207,7 @@ def get_flats_bezrealitky(httpcon, main_url, old_advert_list, price_threshold, q
         connection.close()
         
         # write to the postgres DB, line by line (flat by flat)
-        with psycopg2.connect(host = "localhost", database="bezrealitky", user = "postgres",password = "raspi22") as conn:
+        with psycopg2.connect(host = "localhost", database="bezrealitky", user = "xxxx",password = "xxxx") as conn:
             cc = conn.cursor()
             cc.execute("INSERT INTO inzeraty_praha(DateTime, WebAdress, Surface, Price, PricePerMeter, Location) values (%s,%s,%s,%s,%s,%s)", (str(time.strftime('%Y-%m-%d %H:%M:%S')), advert_output[1], advert_output[2], advert_output[3], advert_output[4],quarter))
         conn.close()
